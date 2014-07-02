@@ -1,10 +1,10 @@
 #ifndef HARDWARE_H
 #define HARDWARE_H
 
-#include <io.h>
-#include <signal.h>
+#include <msp430.h>
+//#include <signal.h>
 #include <iomacros.h>
-
+#include  <msp430g2553.h>
 
 //PINS
 //PORT1
