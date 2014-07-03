@@ -27,15 +27,16 @@
 #define LCDDELAY1MS     750                     // ~1ms @750kHz
 
 //Ausgänge
-#define RELOUT            P1OUT
+#define RELOUT          P1OUT
 #define REL0            BIT2
 #define REL1            BIT3
 
 #define TASTE_IN        P1IN
-#define TASTE_HOCH        BIT4
+#define TASTE_HOCH      BIT4
 #define TASTE_RUNTER    BIT5
 #define TASTE_RECHTS    BIT6
-#define TASTE_LINKS        BIT7
+#define TASTE_LINKS     BIT7
+#define TASTEN          (TASTE_HOCH|TASTE_RUNTER|TASTE_RECHTS|TASTE_LINKS)
 
 #define SONNENSENSOR    ADC12MEM0
 #define TEMPERATURSENSOR    ADC12MEM1

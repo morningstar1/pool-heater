@@ -236,39 +236,69 @@ int main(void) {
 #endif
 
 #include "lcd2.h"
-unsigned int currentMinutes, currentSeconds;
 
 // Timer A0 interrupt service routine
 #pragma vector=TIMER0_A0_VECTOR
 __interrupt void Timer_A (void)
 {
-    P1OUT ^= BIT0;					// Toggle LED
+    //P1OUT ^= BIT0;					// Toggle LED
 }
 
-int main()
-{
-    WDTCTL = WDTPW + WDTHOLD;			// Stop WDT
+//int keycounter[8];
+//Interrupt Routine
 
+int keymap = 0;
+#pragma vector=PORT1_VECTOR
+__interrupt void Port2_Interrupt (void)
+{
+    P1OUT ^= BIT0;
+    __delay_cycles(1000);
+
+    keymap = (~TASTE_IN) & (TASTE_HOCH|TASTE_RUNTER|TASTE_LINKS|TASTE_RECHTS);
+    P1IFG = 0;   //Inerruptflag zurücksetzen
+}
+
+void initHardware(){
+    WDTCTL = WDTPW + WDTHOLD;			// Stop WDT
+}
+
+void initTimerA(){
     BCSCTL1 |= DIVA_3;				// ACLK/8
     BCSCTL3 |= XCAP_3;				//12.5pF cap- setting for 32768Hz crystal
-
-    P1DIR |= BIT0;					// set P1.0 (LED1) as output
-    P1OUT |= BIT0;					// P1.0 low
-
-    currentMinutes = 0;
-    currentSeconds = 0;
-
-    InitializeLcm();
-    ClearLcmScreen();
-
     CCTL0 = CCIE;					// CCR0 interrupt enabled
     CCR0 = 511;					// 512 -> 1 sec, 30720 -> 1 min
     TACTL = TASSEL_1 + ID_3 + MC_1;			// ACLK, /8, upmode
+}
 
-
+void initLCD(){
+    InitializeLcm();
+    ClearLcmScreen();
     PrintStr("Hallo Welt!");
+}
+
+void initKeyboard(){
+    P1OUT &= ~(TASTEN);
+    P1SEL &= ~(TASTEN);
+    P1DIR &= ~(TASTEN);
+    P1IES &= ~(TASTEN);
+    P1IE  |=   TASTEN;
+    P1IFG &= ~(TASTEN);
+}
 
 
-    _BIS_SR(LPM3_bits + GIE);			// Enter LPM3 w/ interrupt
+int main()
+{
+    initHardware();
+    initTimerA();
+    initKeyboard();
+    P1DIR |= BIT0;					// set P1.0 (LED1) as output
+    P1OUT |= BIT0;					// P1.0 low
+    initLCD();
+
+
+    while (1) {                         //main loop, never ends...
+        _BIS_SR(LPM3_bits + GIE);			// Enter LPM3 w/ interrupt
+
+    }
     return 0;
 }
