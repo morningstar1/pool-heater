@@ -7,22 +7,25 @@
 
 #include "menu.h"
 
-int menucount = 12;
-struct menupunkt* menus[12];
+int menucount = 13;
+struct menupunkt* menus[13];
 
 void initMenu(){
-    menus[0] = initUhrStunde();
-    menus[1] = initUhrMinute();
-    menus[2] = initADCMenu();
-    menus[3] = initPWMBreite();
-    menus[4] = initPWMPeriode();
-    menus[5] = initSonne();
-    menus[6] = initKontingent();
-    menus[7] = initKontingentStunde();
-    menus[8] = initFlash();
-    menus[9] = initFlashSave();
-    menus[10] = initTemp();
-    menus[11] = initTempMesspunkt();
+    int i = 0;
+    menus[i++] = initUhrStunde();
+    menus[i++] = initUhrMinute();
+    menus[i++] = initADCMenu();
+    menus[i++] = initPWMBreite();
+    menus[i++] = initPWMPeriode();
+    menus[i++] = initSonne();
+    menus[i++] = initHysterese();
+    menus[i++] = initKontingent();
+    menus[i++] = initKontingentStunde();
+    menus[i++] = initFlash();
+    menus[i++] = initFlashSave();
+    menus[i++] = initTemp();
+    menus[i++] = initTempMesspunkt();
+    menucount = i;
 }
 
 int currentmenu = 2;
@@ -45,9 +48,9 @@ void checkkeys(int keymap){
     }
 
     if(currentmenu >= menucount)
-        currentmenu =0;
-    if(currentmenu <0)
-        currentmenu = menucount-1;
+        currentmenu = 0;
+    if(currentmenu < 0)
+        currentmenu = menucount - 1;
 }
 void drawmenu(){
     (*menus[currentmenu]).drawMenu();

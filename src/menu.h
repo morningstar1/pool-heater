@@ -13,6 +13,7 @@
 #include "menu/ADCMenu.h"
 #include "menu/fivemin.h"
 #include "menu/SonnenSensor.h"
+#include "menu/Hysterese.h"
 #include "menu/kontingent.h"
 #include "menu/Flash.h"
 #include "menu/TemperaturSensor.h"
