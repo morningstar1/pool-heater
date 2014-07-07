@@ -13,9 +13,9 @@
 //Stunde
 void drawADC(void){
     lcdInstr(LCD_LINE1);
-    printf("ch1 %04dch2 %04d",ADC12MEM0,ADC12MEM1);
+    printf("ch1 %04dch2 %04d",/*ADC12MEM0,ADC12MEM1*/0,0);
     lcdInstr(LCD_LINE2);
-    printf("ch3 %04dch4 %04d",ADC12MEM2,ADC12MEM3);
+    printf("ch3 %04dch4 %04d",/*ADC12MEM2,ADC12MEM3*/0,0);
 }
 
 void ADCKeyUp(void){

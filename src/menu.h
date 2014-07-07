@@ -6,7 +6,7 @@
  */
 #include <stdlib.h>
 #include <stdio.h>
-#include "lcd.h"
+#include "lcd2.h"
 #include "hardware.h"
 
 #include "menu/menuUhr.h"

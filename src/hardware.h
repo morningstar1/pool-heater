@@ -38,8 +38,11 @@
 #define TASTE_LINKS     BIT7
 #define TASTEN          (TASTE_HOCH|TASTE_RUNTER|TASTE_RECHTS|TASTE_LINKS)
 
-#define SONNENSENSOR    ADC12MEM0
-#define TEMPERATURSENSOR    ADC12MEM1
+//#define SONNENSENSOR    ADC12MEM0
+//#define TEMPERATURSENSOR    ADC12MEM1
+#define SONNENSENSOR    0
+#define TEMPERATURSENSOR    0
+
 //Port Output Register 'P1OUT, P2OUT':
 #define P1OUT_INIT      0                       // Init Output data of port1
 #define P2OUT_INIT      0                       // Init Output data of port2

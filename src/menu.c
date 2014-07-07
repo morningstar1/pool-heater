@@ -37,8 +37,8 @@ void checkkeys(int keymap){
         --currentmenu;
     }
     if(keymap & (TASTE_LINKS | TASTE_RECHTS)){
-        lcdOn();                            //reset sequence
-        lcdInit();                          //setup LCD modes
+        InitializeLcm();
+        ClearLcmScreen();
     }
     if(keymap & TASTE_RUNTER){
         (*menus[currentmenu]).KeyDown();

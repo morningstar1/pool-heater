@@ -17,9 +17,9 @@
 
 void drawHysterese(void){
     lcdInstr(LCD_LINE1);
-    print_lcd("Sonnenhysterese ");
+    printf("Sonnenhysterese ");
     lcdInstr(LCD_LINE2);
-    print_lcd("<%06d>        ", globals.sonne_hysterese);
+    printf("<%06d>        ", globals.sonne_hysterese);
 }
 
 void HystereseKeyUp(void){

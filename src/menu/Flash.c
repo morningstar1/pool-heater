@@ -6,7 +6,7 @@
  */
 
 #include "../menu.h"
-#include "flash.h"
+#include "Flash.h"
 
 
 unsigned char* flash_current_adress = (unsigned char*)0x1000;

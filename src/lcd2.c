@@ -170,6 +170,10 @@ void LcmSetCursorPosition(char Row, char Col)
     SendByte(0x80 | address, FALSE);
 }
 
+void lcdInstr( char cmd ) {
+    SendByte(cmd, FALSE);
+}
+
 //
 // Routine Desc:
 //
@@ -276,4 +280,9 @@ void PrintStr(char *Text)
         SendByte(*c, TRUE);
         c++;
     }
+}
+
+int putchar(int c) {
+    SendByte(c, TRUE);
+    return 1;
 }

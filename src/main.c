@@ -232,10 +232,13 @@ int main(void) {
     }
 }
 
-
+InitializeLcm();
+ClearLcmScreen();
 #endif
 
 #include "lcd2.h"
+#include <legacymsp430.h>
+#include <stdio.h>
 
 // Timer A0 interrupt service routine
 #pragma vector=TIMER0_A0_VECTOR
@@ -251,11 +254,11 @@ int keymap = 0;
 #pragma vector=PORT1_VECTOR
 __interrupt void Port2_Interrupt (void)
 {
-    P1OUT ^= BIT0;
     __delay_cycles(1000);
 
     keymap = (~TASTE_IN) & (TASTE_HOCH|TASTE_RUNTER|TASTE_LINKS|TASTE_RECHTS);
-    P1IFG = 0;   //Inerruptflag zurücksetzen
+    //P1IFG = 0;   //Inerruptflag zurücksetzen
+    P1IFG &= ~(TASTEN);
 }
 
 void initHardware(){
@@ -273,13 +276,14 @@ void initTimerA(){
 void initLCD(){
     InitializeLcm();
     ClearLcmScreen();
-    PrintStr("Hallo Welt!");
+    printf("Hallo Welt!");
 }
 
 void initKeyboard(){
     P1OUT &= ~(TASTEN);
     P1SEL &= ~(TASTEN);
     P1DIR &= ~(TASTEN);
+    P1REN |= TASTEN;
     P1IES &= ~(TASTEN);
     P1IE  |=   TASTEN;
     P1IFG &= ~(TASTEN);
@@ -288,16 +292,24 @@ void initKeyboard(){
 
 int main()
 {
+    P1DIR |= BIT0;					// set P1.0 (LED1) as output
+    P1OUT |= BIT0;					// P1.0 low
     initHardware();
     initTimerA();
     initKeyboard();
-    P1DIR |= BIT0;					// set P1.0 (LED1) as output
-    P1OUT |= BIT0;					// P1.0 low
     initLCD();
-
+    initMenu();
 
     while (1) {                         //main loop, never ends...
+        checkMitternacht();
+        checkkeys(keymap);
+        keymap = 0;
+        drawmenu();
+        eint();
+        //LPM0;                           //sync, wakeup by irq
         _BIS_SR(LPM3_bits + GIE);			// Enter LPM3 w/ interrupt
+        P1OUT ^= BIT0;
+        dint();
 
     }
     return 0;
