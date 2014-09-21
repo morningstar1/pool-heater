@@ -41,17 +41,16 @@ struct savestruct{
     int temp_messpunkt;
 };
 
-struct savestruct globals;
-
+extern struct savestruct globals;
 
 //global vars to store the time
-int h, m, s;
+extern int h, m, s;
 
 //zeitmessung für 5 min schaltung
-int pwm_takt;
+extern int pwm_takt;
 
 //kontingentmessung
-int kontingent;
+extern int kontingent;
 
 //temp
-int tempZuViel;
+extern int tempZuViel;

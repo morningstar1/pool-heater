@@ -7,7 +7,7 @@
 
 #include "menu.h"
 
-int menucount = 13;
+int menucount = 0;
 struct menupunkt* menus[13];
 
 void initMenu(){
@@ -28,7 +28,7 @@ void initMenu(){
     menucount = i;
 }
 
-int currentmenu = 2;
+int currentmenu = 0;
 void checkkeys(int keymap){
     if(keymap & TASTE_RECHTS){
         ++currentmenu;
@@ -37,8 +37,8 @@ void checkkeys(int keymap){
         --currentmenu;
     }
     if(keymap & (TASTE_LINKS | TASTE_RECHTS)){
-        InitializeLcm();
-        ClearLcmScreen();
+        //InitializeLcm();
+        //ClearLcmScreen();
     }
     if(keymap & TASTE_RUNTER){
         (*menus[currentmenu]).KeyDown();
@@ -62,3 +62,17 @@ void checkMitternacht(){
         tempZuViel = 0;
     }
 }
+
+//global vars to store the time
+int h=0, m=0, s=0;
+
+//zeitmessung für 5 min schaltung
+int pwm_takt = 0;
+
+//kontingentmessung
+int kontingent = 0;
+
+//temp
+int tempZuViel = 0;
+
+struct savestruct globals;

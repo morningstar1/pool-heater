@@ -3,7 +3,6 @@ see README.txt for details.
 
 chris <cliechti@gmx.net>
 */
-#include "hardware.h"
 //#include <stdlib.h>
 //#include <stdio.h>
 //#include "lcd.h"
@@ -235,16 +234,33 @@ int main(void) {
 InitializeLcm();
 ClearLcmScreen();
 #endif
+#include "hardware.h"
 
 #include "lcd2.h"
 #include <legacymsp430.h>
 #include <stdio.h>
+#include "menu.h"
 
+int counter=0;
 // Timer A0 interrupt service routine
 #pragma vector=TIMER0_A0_VECTOR
 __interrupt void Timer_A (void)
 {
-    //P1OUT ^= BIT0;					// Toggle LED
+    if(counter++ % 512 == 0){
+        //P1OUT ^= BIT0;					// Toggle LED
+        counter = 0;
+        if (++s > 59) {                     //count seconds, up to one minute
+            s = 0;                          //reset seconds and ...
+            if (++m > 59) {                 //count miutes, up to one hour
+                m = 0;                      //reset minutes and ...
+                if (++h > 23) {             //cound hours, up to one day
+                    h = 0;                  //reset hours and ...
+                    //++day ...             //don't do anything, could count days here
+                }
+            }
+        }
+    }
+    _BIC_SR_IRQ(LPM0_bits);
 }
 
 //int keycounter[8];
@@ -252,17 +268,39 @@ __interrupt void Timer_A (void)
 
 int keymap = 0;
 #pragma vector=PORT1_VECTOR
-__interrupt void Port2_Interrupt (void)
+__interrupt void Port1_Interrupt (void)
 {
     __delay_cycles(1000);
 
-    keymap = (~TASTE_IN) & (TASTE_HOCH|TASTE_RUNTER|TASTE_LINKS|TASTE_RECHTS);
+    keymap = TASTE_IN & TASTEN;
     //P1IFG = 0;   //Inerruptflag zurücksetzen
-    P1IFG &= ~(TASTEN);
+    //P1OUT ^= BIT0;					// Toggle LED
+    P1IFG &= ~TASTEN;
+    _BIC_SR_IRQ(LPM0_bits);
 }
 
 void initHardware(){
     WDTCTL = WDTPW + WDTHOLD;			// Stop WDT
+}
+
+void initADC(){
+    /*
+    //ADC12 settings
+    //ADC12CTL0 = ADC12ON+SHT0_0+MSC+REFON+REF2_5V;  // ADC12 anschalten, n=1, mehrere konvertierungen, referenz auf 2,5V setzen
+    ADC12CTL0 = ADC12ON+SHT0_0+MSC+REFON;  // ADC12 anschalten, n=1, mehrere konvertierungen, referenz auf 2,5V setzen
+    ADC12CTL1 = SHP+CONSEQ_1;  // SHP benutzen, sequence of channels genau 1 mal konvertieren (P6.0 und P6.1)
+    ADC12MCTL0 = SREF_0+INCH_0;  // Vr+=Vref+
+    ADC12MCTL1 = SREF_1+INCH_1;  // Vr+=Vref+
+    ADC12MCTL2 = SREF_0+INCH_2;  // Vr+=Vref+
+    ADC12MCTL3 = SREF_0+INCH_3+EOS;  // Vr+=Vref+
+    ADC12CTL0 |= ENC;       // jetzt anfangen ...
+*/
+    P1SEL |= BIT0 | BIT1;
+    ADC10CTL1 = CONSEQ_1 + INCH_0 + INCH_1 + INCH_10;						// Repeat single channel, A0
+    ADC10CTL0 = ADC10SHT_2 + MSC + ADC10ON + ADC10IE;	// Sample & Hold Time + ADC10 ON + Interrupt Enable
+    ADC10DTC1 = 0x0A;									// 10 conversions
+    ADC10AE0 |= 0x01;									// P1.0 ADC option select
+
 }
 
 void initTimerA(){
@@ -280,37 +318,58 @@ void initLCD(){
 }
 
 void initKeyboard(){
-    P1OUT &= ~(TASTEN);
-    P1SEL &= ~(TASTEN);
-    P1DIR &= ~(TASTEN);
-    P1REN |= TASTEN;
-    P1IES &= ~(TASTEN);
-    P1IE  |=   TASTEN;
-    P1IFG &= ~(TASTEN);
+    P1DIR &= ~TASTEN; //Input Pin
+    P1OUT &= ~TASTEN; //Pull Down
+    P1SEL &= ~TASTEN; //IO
+    P1REN |=  TASTEN; //Pull Down enable
+    P1IES &= ~TASTEN; //Low to High transition
+    P1IE  |=  TASTEN; //Interupt Enable
+    P1IFG &= ~TASTEN; //Reset Interrupt
 }
 
+void initStatics(){
+    pwm_takt = 0;
+    h = m = s = 0;
+    kontingent = 0;
+    tempZuViel = 0;
+
+    globals.pwm_breite = 5*60;
+    globals.pwm_periode = 10*60;
+    globals.kontingent_minimum = 60*60;
+    globals.kontingent_startstunde = 18;
+    globals.sonne_hysterese = 200;
+    globals.sonne_schwelle = 2000;
+    globals.temp_messpunkt = 2*60;
+    globals.temp_schwelle = 1300;
+
+    struct savestruct * flashptr = (struct savestruct *)0x1000;
+
+    if(flashptr->pwm_periode!=0xFFFF){
+        globals = *flashptr;
+    }
+}
 
 int main()
 {
-    P1DIR |= BIT0;					// set P1.0 (LED1) as output
-    P1OUT |= BIT0;					// P1.0 low
+    P1DIR |= 0x01;					// set P1.0 (LED1) as output
+    P1OUT |= 0x01;					// P1.0 low
     initHardware();
     initTimerA();
     initKeyboard();
+    initStatics();
     initLCD();
     initMenu();
-
     while (1) {                         //main loop, never ends...
         checkMitternacht();
         checkkeys(keymap);
         keymap = 0;
         drawmenu();
-        eint();
+        //eint();
         //LPM0;                           //sync, wakeup by irq
-        _BIS_SR(LPM3_bits + GIE);			// Enter LPM3 w/ interrupt
+        _BIS_SR(LPM0_bits + GIE);			// Enter LPM3 w/ interrupt
         P1OUT ^= BIT0;
-        dint();
-
+        //dint();
+        _BIC_SR(LPM0_bits + GIE);			// Enter LPM3 w/ interrupt
     }
     return 0;
 }
